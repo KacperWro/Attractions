@@ -1,0 +1,28 @@
+.navbar {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    background:#323C50;
+    color: #f2f2f2;
+    margin-left:-1em;
+    margin-right:-0.5em;
+    margin-top:-0.5em; /*Added margin left, right and top so that it fits the website better*/
+}
+
+input[type=search] {
+	background: #1F2739 url(http://hp-proliant.co.uk/qual_images/mob-search-icon.png) no-repeat 9px center; /*Changed background colour*/
+	border: solid 1px black; /*Changed border colour*/
+	padding: 9px 10px 9px 32px;
+	width: 55px;
+}
+input[type=search]:focus {
+	width: 600px;
+	background-color: #2C3446; /*Changed background colour*/
+	border-color: #333;
+	border: solid 1px black; /*Changed border colour*/
+}
+
+/*This bootstrap template is from https://bootsnipp.com/snippets/bxK19*/

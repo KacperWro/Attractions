@@ -1,0 +1,126 @@
+#modal {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  background-color: rgba(0, 0, 0, 0.7); }
+
+.modalContent {
+  overflow: hidden;
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  top: 15%;
+  bottom: 15%;
+  margin: auto;
+  background: #1F2739;
+  border-radius: 1em;
+  padding: 5px;
+  border: 0.2em solid black;
+  width: 15%;
+  height: 35%; }
+  .modalContent h1 {
+    font-size: 1.5em; }
+  .modalContent h2 {
+    font-size: 1em;
+    margin: 0px;
+    padding: 0px;
+    margin-top: 0.5em; }
+
+#attractionModal {
+  width: 50%;
+  height: 70%;
+  text-align: left; }
+  #attractionModal h2 {
+    text-align: left;
+    margin-bottom: -1em;
+    margin-left: 1em; }
+  #attractionModal p {
+    margin-left: 1em;
+    color: white; }
+  #attractionModal input {
+    margin-left: 0.2em;
+    border-radius: 1em;
+    float: right;
+    color: red; }
+    #attractionModal input:hover {
+      cursor: pointer; }
+  #attractionModal iframe {
+    width: 48%;
+    height: 50%;
+    margin-top: 1.5em;
+    border: none;
+    margin-left: 1em;
+    margin-top: 1.5em; }
+  #attractionModal #map {
+    float: right;
+    margin-right: 1em;
+    margin-left: 0; }
+
+#backToTop {
+  float: right;
+  height: 3em;
+  margin-right: 1em;
+  margin-bottom: 1em; }
+
+span {
+  font-size: 1.5em; }
+
+.button {
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+  border-radius: 100%;
+  background-color: #1F2739;
+  border: none; }
+  .button:hover {
+    cursor: pointer; }
+
+#modifyButton {
+  color: white;
+  margin-right: 0.3em;
+  font-size: 0.78em; }
+
+#removeButton {
+  color: red;
+  margin-right: 0.2em;
+  margin-left: -1em; }
+
+#addButton {
+  background-color: #323C50;
+  color: lawngreen;
+  border-radius: 0; }
+
+form {
+  text-align: left;
+  color: #FB667A;
+  margin-left: 1.5em; }
+
+input {
+  background-color: #323C50;
+  color: white;
+  border: 0.1em solid black;
+  font-size: 1em; }
+
+select {
+  background-color: #1F2739;
+  color: white;
+  border: 0.1em solid black;
+  height: 2em;
+  font-size: 1em; }
+
+.formButton {
+  margin-top: 1em;
+  height: 2em;
+  font-size: 1em; }
+  .formButton:hover {
+    cursor: pointer; }
+
+#viewButton {
+  margin-right: 0.3em;
+  color: lawngreen; }
+
+/*# sourceMappingURL=main.css.map */

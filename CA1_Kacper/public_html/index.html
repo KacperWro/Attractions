@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Attractions of Ireland</title>
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta http-equiv="Content-Language" content="en" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/searchTemplate.css" rel="stylesheet" type="text/css"/>
+<link href="css/tableBoostrap.css" rel="stylesheet" type="text/css"/>
+<link rel="icon" href="images/flag.png">
+<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>  
+<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+<script src="https://unpkg.com/prop-types@15.6/prop-types.js"></script> 
+
+<script type="text/babel">
+"use strict"
+
+let attractionsData
+let regions
+let uniqueRegions
+    
+let url = `attractions.json`
+
+fetch(url)
+        .then(response => response.json())
+        .then(jsonData =>
+        {
+            attractionsData = jsonData
+
+            regions = attractionsData.map(attraction => attraction.address.addressRegion)
+            uniqueRegions = [...new Set(regions)].sort()
+            uniqueRegions.unshift("All Regions") 
+
+            ReactDOM.render(<AttractionsForm attractions = {attractionsData} regions={uniqueRegions}/>, document.getElementById("listContainer"))
+
+        })
+
+class AttractionModal extends React.Component
+{
+    static propTypes = 
+    {
+        attraction:PropTypes.object
+    }
+    
+    constructor(props)
+    {
+        super(props)
+    }
+    
+    render()
+    {
+        return ( 
+          <div id = "modal">
+  
+            <div className = "modalContent" id="attractionModal">
+            <input type="button" value="X" onClick={this.props.closeAttractionModal}/>
+              <h1>{this.props.attraction.name}</h1>
+              <h2>Address</h2>
+              <p>{this.props.attraction.address.addressLocality}, {this.props.attraction.address.addressRegion}, {this.props.attraction.address.addressCountry}</p>
+              {this.props.attraction.url !== "" ? <h2>Website</h2>:null}
+              {this.props.attraction.url !== "" ? <iframe src={this.props.attraction.url}/>:null}
+              <iframe id="map" src='https://maps.google.com/maps?q={this.props.attraction.name}=&output=embed'/> 
+            </div>
+          </div>
+        )
+    }
+}
+    
+class AddModal extends React.Component
+{
+    static propTypes =
+    {
+        addAttraction:PropTypes.func
+    }
+    
+    constructor(props)
+    {
+        super(props)
+    }
+    
+    render()
+    {
+        return ( 
+          <div id = "modal">
+            <div className = "modalContent">
+              <h1>Add New Attraction</h1>
+              <form spellCheck="false">
+                <label for="modifyName">Name of Attraction</label><br />
+                <input type="text" id="addName" name="name"></input><br />
+                <label for="modifyRegion">Region</label><br />
+                <input type="text" id="addRegion" name="region"></input><br />
+                <label for="modifyLocality">Locality</label><br />
+                <input type="text" id="addLocality" name="locality"></input><br />
+                <label for="modifyTelephone">Telephone</label><br />
+                <input type="text" id="addTelephone" name="telephone"></input><br />
+                <input type="button" value="Cancel" className="formButton" onClick={this.props.closeAddModal}></input>
+                <input type="button" value="Submit" className="formButton" onClick={() =>  {this.props.addAttraction(addName.value, addRegion.value, addLocality.value, addTelephone.value);
+                                                                                            this.props.closeAddModal()}}></input>
+              </form>       
+            </div>
+          </div>
+        )
+    }
+}
+
+class ModifyModal extends React.Component 
+{
+    static propTypes = 
+    {
+        attraction:PropTypes.object,
+        modifyAttraction:PropTypes.func
+    }
+   
+    constructor(props)
+    {
+        super(props)
+    }
+    
+    render() 
+    {
+        return ( 
+          <div id = "modal">
+            <div className = "modalContent">
+              <h1>Modify {this.props.attraction.name}</h1>
+              <form spellCheck="false">
+                <label for="modifyName">Name of Attraction</label><br />
+                <input type="text" id="modifyName" name="name" defaultValue={this.props.attraction.name}></input><br />
+                <label for="modifyRegion">Region</label><br />
+                <input type="text" id="modifyRegion" name="region" defaultValue={this.props.attraction.address.addressRegion}></input><br />
+                <label for="modifyLocality">Locality</label><br />
+                <input type="text" id="modifyLocality" name="locality" defaultValue={this.props.attraction.address.addressLocality}></input><br />
+                <label for="modifyTelephone">Telephone</label><br />
+                <input type="text" id="modifyTelephone" name="telephone" defaultValue={this.props.attraction.telephone}></input><br />
+                <input type="button" value="Cancel" className="formButton" onClick={this.props.closeModifyModal}></input>
+                <input type="button" value="Submit" className="formButton" onClick={() => {this.props.modifyAttraction(this.props.attraction.name, modifyName.value, modifyRegion.value, 
+                                                                                           modifyLocality.value, modifyTelephone.value);this.props.closeModifyModal()}}></input>
+              </form>       
+            </div>
+          </div>
+        )
+    }
+}
+
+class AttractionRow extends React.Component 
+{
+    static propTypes = 
+    {
+        attraction:PropTypes.object,
+        region:PropTypes.string,
+        deleteOne:PropTypes.func,
+        modifyAttraction:PropTypes.func
+    }
+    
+    constructor(props)
+    {
+        super(props)
+        
+        this.state = 
+        {
+            showModifyModal: false,
+            showAttractionModal: false          
+        }    
+    }
+    
+    handleModifyClick = e =>
+    {    
+        this.toggleModifyModal()      
+    }
+    
+    handleViewClick = e =>
+    {
+        this.toggleAttractionModal()
+    }
+ 
+    toggleModifyModal() 
+    {    
+        this.setState({showModifyModal: !this.state.showModifyModal})
+    }
+    
+    toggleAttractionModal()
+    {
+        this.setState({showAttractionModal: !this.state.showAttractionModal})
+    }
+   
+    render()
+    {           
+        return (                 
+                <tr key={this.props.attraction.name}>
+                  <td>
+                    <button className="button" id="removeButton" title="Delete" onClick={() => this.props.deleteOne(this.props.attraction.name)}>X</button>
+                    <button className="button" id="modifyButton" title="Edit" onClick={this.handleModifyClick}>&#9998;</button>
+                    <button className="button" id="viewButton" title="View" onClick={this.handleViewClick}>...</button>{this.props.attraction.name}
+                  </td>
+                  <td>{this.props.attraction.address.addressRegion}</td>
+                  <td>{this.props.attraction.address.addressLocality}</td>
+                  <td>{this.props.attraction.telephone}</td>     
+                  {this.state.showModifyModal ? <ModifyModal 
+                                        attraction = {this.props.attraction}
+                                        closeModifyModal = {this.toggleModifyModal.bind(this)}
+                                        modifyAttraction = {this.props.modifyAttraction}/> : null}
+                  {this.state.showAttractionModal ? <AttractionModal attraction = {this.props.attraction} closeAttractionModal = {this.toggleAttractionModal.bind(this)}/>:null}
+                </tr>  
+        )
+    }
+}
+
+let desc = false
+let nameArrow = null
+let regionArrow = null
+let localArrow = null
+let phoneArrow = null
+
+class Attractions extends React.Component 
+{
+    static propTypes = 
+    {
+        attractions:PropTypes.array,     
+        allAttractions:PropTypes.array,
+        region:PropTypes.string
+    }
+   
+    constructor(props)
+    {
+        super(props)
+        
+        this.state = {
+            attractions:this.props.attractions,
+            showAddModal: false
+        }          
+    }
+	
+    static getDerivedStateFromProps(props, state) 
+    { 
+        return(state.attractions !== props.attractions?{attractions: props.attractions}:null) 
+    } 
+   
+    handleNameClick = e =>
+    {
+        regionArrow = null
+        localArrow = null
+        phoneArrow = null
+
+        let attractions
+        if(!desc)
+        {
+            attractions = this.props.attractions.sort((a, b) => a.name < b.name?-1:1)
+            desc = true
+            nameArrow = '↓'
+        }
+        else
+        {
+            attractions = this.props.attractions.sort((a, b) => a.name < b.name?1:-1)
+            desc = false
+            nameArrow = '↑'
+        }
+        this.setState({attractions, attractions})       
+    }
+    
+    handleLocalityClick = e =>
+    {
+        nameArrow = null
+        regionArrow = null
+        phoneArrow = null
+    
+        let attractions
+        if(!desc)
+        {
+           attractions = this.props.attractions.sort((a, b) => a.address.addressLocality < b.address.addressLocality?-1:1) 
+           desc = true
+           localArrow = '↓'
+        }
+        else
+        {
+            attractions = this.props.attractions.sort((a, b) => a.address.addressLocality < b.address.addressLocality?1:-1) 
+            desc = false
+            localArrow = '↑'
+        }
+        
+        this.setState({attractions, attractions})       
+    }
+    
+    handleRegionClick = e =>
+    {
+        nameArrow = null
+        localArrow = null
+        phoneArrow = null
+        
+        let attractions
+        if(!desc)
+        {
+           attractions = this.props.attractions.sort((a, b) => a.address.addressRegion < b.address.addressRegion?-1:1) 
+           desc = true
+           regionArrow = '↓'
+        }
+        else
+        {
+            attractions = this.props.attractions.sort((a, b) => a.address.addressRegion < b.address.addressRegion?1:-1) 
+            desc = false
+            regionArrow = '↑'
+        }
+        
+        this.setState({attractions, attractions})       
+    }
+    
+    handleTelephoneClick = e =>
+    {
+        nameArrow = null
+        regionArrow = null
+        localArrow = null
+        
+        let attractions
+        if(!desc)
+        {
+           attractions = this.props.attractions.sort((a, b) => a.telephone < b.telephone?-1:1) 
+           desc = true
+           phoneArrow = '↓'
+        }
+        else
+        {
+            attractions = this.props.attractions.sort((a, b) => a.telephone < b.telephone?1:-1) 
+            desc = false
+            phoneArrow = '↑'
+        }
+        this.setState({attractions, attractions})
+    }     
+    
+    handleAddClick = e =>
+    {    
+        this.toggleAddModal()      
+    }
+ 
+    toggleAddModal() 
+    {    
+        this.setState({showAddModal: !this.state.showAddModal})
+    }
+    
+    removeAttraction = e =>
+    {
+        let selectedRegionIndex
+        let selectedIndex
+        let attractions = this.props.attractions
+        let allAttractions = this.props.allAttractions
+        
+        attractions.map((attraction, index) => 
+        {
+            if (attraction.name === e)   
+            {                                               
+                selectedRegionIndex = index
+            }
+        })
+        
+        allAttractions.map((attraction, index) => 
+        {
+            if (attraction.name === e)   
+            {                                               
+                selectedIndex = index
+            }
+        })
+
+        attractions.splice(selectedRegionIndex, 1)
+        if (this.props.region !== "All Regions" || document.getElementById('searchBar').value !== "")
+        {
+            allAttractions.splice(selectedIndex, 1)
+        }
+
+        this.setState({attractions, attractions})
+    }
+    
+    modifyAttraction = (nameKey, name, region, locality, telephone) =>
+    {
+        let attractions = this.props.attractions
+        attractions.map(attraction =>
+        {
+            if (attraction.name === nameKey)
+            {
+                attraction.name = name
+                attraction.address.addressRegion = region
+                attraction.address.addressLocality = locality
+                attraction.telephone = telephone
+            }
+        })
+        
+        this.setState({attractions, attractions})
+    }
+    
+    addAttraction = (name, region, locality, telephone) =>
+    {
+        let attractions = this.props.attractions
+        let allAttractions = this.props.allAttractions
+        let newAttraction = {name:name, address:{addressRegion:region, addressLocality:locality}, telephone:telephone}
+        
+        attractions.push(newAttraction)
+        if (this.props.region !== "All Regions" || document.getElementById('searchBar').value !== "")
+        {
+            allAttractions.push(newAttraction)
+        }
+        
+        this.setState({attractions, attractions})
+    }
+    
+    render()
+    {           
+        return ( 
+                <div>
+                  <table id="container"> 
+                    <thead>
+                        <tr>
+                        <th><h1 onClick={this.handleNameClick}>Name<span>{nameArrow}</span></h1></th>
+                        <th><h1 onClick={this.handleRegionClick}>Region<span>{regionArrow}</span></h1></th>
+                        <th><h1 onClick={this.handleLocalityClick}>Locality<span>{localArrow}</span></h1></th>
+                        <th><h1 onClick={this.handleTelephoneClick}>Telephone<span>{phoneArrow}</span></h1></th></tr>
+                    </thead> 
+                    <tbody>
+                      {this.state.attractions.map(attraction => 
+                        <AttractionRow 
+                            key={attraction.name} 
+                            attraction={attraction} 
+                            region={this.props.region} 
+                            deleteOne={this.removeAttraction} 
+                            modifyAttraction={this.modifyAttraction}/>)}                         
+                    </tbody>    
+                    <button className="button" id="addButton" onClick={this.handleAddClick}>Add</button>
+                  </table> 
+                  {this.state.showAddModal ? <AddModal closeAddModal = {this.toggleAddModal.bind(this)} addAttraction = {this.addAttraction}/> : null}
+                  <a href="#top"><img src="images/arrow.png" id="backToTop" alt="arrow" title="Back to Top"/></a>
+                </div>               
+        )
+    }
+}
+
+class AttractionsForm extends React.Component 
+{
+    static propTypes = 
+    {
+        attractions:PropTypes.array,
+        regions:PropTypes.array 
+    }
+     
+    constructor(props)
+    {
+        super(props)
+        
+        this.state = {
+            selectedAttractions:this.props.attractions,
+            selectedRegion:"All Regions"
+        }
+    }
+
+    handleRegionsChange = e => 
+    {
+        this.setState({selectedRegion: e.target.value})
+        if(e.target.value === "All Regions")
+        {
+            this.setState({selectedAttractions: this.props.attractions})
+        }
+        else
+        {
+            this.setState({selectedAttractions: this.props.attractions.filter(attraction => attraction.address.addressRegion === e.target.value)})
+        }
+    }
+    
+    handleSearch = e =>
+    {
+        if(e == "")
+        {
+            if (this.state.selectedRegion !== "All Regions")
+            {
+                this.setState({selectedAttractions: this.props.attractions.filter(attraction => attraction.address.addressRegion === this.state.selectedRegion)})
+            }
+            else
+            {
+                this.setState({selectedAttractions: this.props.attractions})
+            }
+        }
+        else
+        {
+            this.setState({selectedAttractions: this.state.selectedAttractions.filter(attraction => attraction.name.indexOf(e) !== -1 || 
+                                                                                                    attraction.address.addressRegion.indexOf(e) !== -1 || 
+                                                                                                    attraction.address.addressLocality.indexOf(e) !== -1 || 
+                                                                                                    attraction.telephone.indexOf(e) !== -1)})
+        }
+    }
+    
+    render()
+    {           
+        return (  
+          <div id="attractionsDiv">
+              <a name="top"></a>
+                <center>
+               
+                <nav class="navbar">
+                <select name="regions" onChange={this.handleRegionsChange}>
+				  
+                  {this.props.regions.map(region => <option key={region} value={region}>{region}</option>)}                  
+				  
+                </select> 
+                    <a class="navbar-brand"></a>
+                    <form class="form-inline">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" id="searchBar" defaultValue="" onChange={() => this.handleSearch(searchBar.value)}/>
+                    </form>
+                </nav>
+                </center>
+              
+              <h1>Attractions of the Republic of Ireland</h1>  
+              <Attractions attractions={this.state.selectedAttractions} region={this.state.selectedRegion} allAttractions={this.props.attractions}/>             
+          </div>
+        )
+    }
+}
+
+</script>
+</head>
+<body>
+<div id="listContainer"></div>
+
+<script type="text/babel">
+</script>
+
+</body>
+</html>
